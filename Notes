@@ -34,8 +34,8 @@ Notes:
 		- Fence = NA means no fence (impute when dummifying)
 		- Alley = NA means no alley access (impute when dummifying)
 	- Remove
-		- Heating  - done kc 
-		- Fence  
+		- Heating                  - done kc 
+		- Fence                    
 		- MiscFeature
 		- SaleType
 		- Electrical (turn into binary feature)
@@ -64,13 +64,19 @@ Notes:
 	- HasFirePlace = 0 (no), 1 (not-Ex), 2 (Ex)
 	- GarageCars = 0, 1, 2, 3+ categorical
 	- HasPool?
-some helpful code: 
+
+some helpful code: HasDeck and HasPorch
 #create column for new variable (one is enough because it's a binary categorical feature)
 #if area>0 it gets 1, for area==0 it gets 0
 
 df_train['HasDeck'] = pd.Series(len(df_train['WoodDeckSF']), index=df_train.index)
 df_train['HasDeck'] = 0 
 df_train.loc[df_train['WoodDeckSF']>0,'HasDeck'] = 1
+
+Total area skewness: cone shape in scatter plot? Need equal levels of variance across the range ofr Total Area:
+#data transformation
+df_train['Total_Area'] = np.log(df_train['Total_Area'])
+
 
 	Kailun to-do
 	- HasGasHeating = 0 (no), 1 (yes)
