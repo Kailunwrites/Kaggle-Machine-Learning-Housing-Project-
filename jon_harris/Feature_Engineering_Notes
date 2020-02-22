@@ -1,0 +1,13 @@
+TotalSqFt = Basement + 1stFloor + 2ndFloor
+
+TotalBath = Fullbath + 0.5*Halfbath (both in house and basement)
+
+BedBathratio = nBed/nBath
+
+TotalPorchSqFt = sum of all porch area
+
+HasGarage
+HasBasement
+HasFireplace
+Has2ndFloor
+
