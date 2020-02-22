@@ -34,19 +34,21 @@ Notes:
 		- Fence = NA means no fence (impute when dummifying)
 		- Alley = NA means no alley access (impute when dummifying)
 	- Remove
-		- Heating                  - done kc 
 		- Fence                    - done kc
 		- MiscFeature              - done kc     
 		- SaleType                  - done kc 
 		- PoolQC                    -done kc 
 		- BsmtFinType2              -done kc
 		- Functional                - done kc 
-
+		- GarageCond               -done kc 
+		- SaleCondition            -done kc 
+		
+		- Heating (will simplify to categorical labels)                  - done kc 
 		- Electrical (will simplify to category labels) 
 		- BsmtQual (will simplify category labels)  
-		- BsmtExposure
-		- GarageCond
-		- SaleCondition
+		- BsmtExposure (will simplify category labels)  
+		
+		
 		- Street
 
 - Feature Engineering:
@@ -79,14 +81,18 @@ df_train['Total_Area'] = np.log(df_train['Total_Area'])
 
 
 	Kailun to-do
-	- HasGasHeating = 0 (no), 1 (yes)
-	- Electrical = 0 
-	- HasSBrkr = 0 (no), 1 (yes)
-	- BsmtQual = 0 (Fa/None), 1 (TA), 2 (Gd), 3 (Ex)
-	- BsmntExposure = 0 (None, No, Mn, Av), 1 (Gd)
-	- BsmtFinType1 = 0 (rest), 1 (GLQ)
+	- 'Heating' HasGasHeating = 0 (no), 1 (yes) group GasA and GasW into one group= 1 (yes) 
+	- 'Electrical' HasSBrkr = 0 (no), 1 (yes)       
+	- 'BsmtQual' HasEx = 0(no), 1(yes)     
+	- 'BsmntExposure' HasGd= 0 (None, No, Mn, Av), 1 (Gd)
+	- 'BsmtFinType1' HasGLQ = 0 (rest), 1 (GLQ)
 	- HasBasment = 0 (no), 1 (yes)
 	- HasPavedDrive = 0 (no), 1 (yes)
+
+- Electrical (will simplify to category labels) 
+- BsmtQual (will simplify category labels)  
+- BsmtExposure (will simplify category labels)  
+		
 
 
 Final Categorical Variables kc:  [
