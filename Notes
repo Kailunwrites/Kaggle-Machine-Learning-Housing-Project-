@@ -35,16 +35,16 @@ Notes:
 		- Alley = NA means no alley access (impute when dummifying)
 	- Remove
 		- Heating                  - done kc 
-		- Fence                    
-		- MiscFeature
-		- SaleType
-		- Electrical (turn into binary feature)
-		- PoolQC
-		- BsmtFinType2
-		- Functional
-		- BsmtQual (will simplify category labels)
+		- Fence                    - done kc
+		- MiscFeature              - done kc     
+		- SaleType                  - done kc 
+		- PoolQC                    -done kc 
+		- BsmtFinType2              -done kc
+		- Functional                - done kc 
+
+		- Electrical (will simplify to category labels) 
+		- BsmtQual (will simplify category labels)  
 		- BsmtExposure
-		- Functional
 		- GarageCond
 		- SaleCondition
 		- Street
@@ -52,8 +52,8 @@ Notes:
 - Feature Engineering:
 
 	Jon to-do
-	- Total Area = GrLivArea + TotalBsmSF
-	- Total Finished Area = GrLivArea + Finished Basement area
+	- Total Area = GrLivArea + TotalBsmSF  
+	- Total Finished Area = GrLivArea + Finished Basement area   
 	- Has2ndFl = has second floor (0 and 1)
 	- Age_Built = YrSold - YearBuilt
 	- Age_remod = YrSold - YearRemodAdd
@@ -73,13 +73,14 @@ df_train['HasDeck'] = pd.Series(len(df_train['WoodDeckSF']), index=df_train.inde
 df_train['HasDeck'] = 0 
 df_train.loc[df_train['WoodDeckSF']>0,'HasDeck'] = 1
 
-Total area skewness: cone shape in scatter plot? Need equal levels of variance across the range ofr Total Area:
+Total area skewness: cone shape in scatter plot? Need equal levels of variance across the range of Total Area:
 #data transformation
 df_train['Total_Area'] = np.log(df_train['Total_Area'])
 
 
 	Kailun to-do
 	- HasGasHeating = 0 (no), 1 (yes)
+	- Electrical = 0 
 	- HasSBrkr = 0 (no), 1 (yes)
 	- BsmtQual = 0 (Fa/None), 1 (TA), 2 (Gd), 3 (Ex)
 	- BsmntExposure = 0 (None, No, Mn, Av), 1 (Gd)
