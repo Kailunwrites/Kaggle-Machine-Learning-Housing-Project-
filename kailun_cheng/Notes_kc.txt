@@ -48,24 +48,6 @@ Notes:
 		- BsmtQual (will simplify category labels)  
 		- BsmtExposure (will simplify category labels)  
 		
-		
-		- Street
-
-- Feature Engineering:
-
-	Jon to-do
-	- Total Area = GrLivArea + TotalBsmSF  
-	- Total Finished Area = GrLivArea + Finished Basement area   
-	- Has2ndFl = has second floor (0 and 1)
-	- Age_Built = YrSold - YearBuilt
-	- Age_remod = YrSold - YearRemodAdd
-	- TotalPorchSF =  OpenPorchSF + EnclosedSF + 3SsnPorch + ScreenPorch
-	- HasDeck = 0 (no), 1 (yes)
-	- HasPorch = 0 (no), 1 (yes)
-	- TotBaths = Fullbath + 0.5*Halfbath (both in house and basement)
-	- HasFirePlace = 0 (no), 1 (not-Ex), 2 (Ex)
-	- GarageCars = 0, 1, 2, 3+ categorical
-	- HasPool?
 
 some helpful code: HasDeck and HasPorch
 #create column for new variable (one is enough because it's a binary categorical feature)
@@ -89,6 +71,7 @@ df_train['Total_Area'] = np.log(df_train['Total_Area'])
 	- 'BsmtFinType1' HasGLQ = 0 (rest), 1 (GLQ)
 
 	- 'PavedDrive' HasPavedDrive = 0 (N,P), 1 (Y)
+	- 'GarageQual' HasTA= 0(Ex, Gd, Fa, Po, None), 1 (TA)
 
 - Heating (will simplify category labels)
 - Electrical (will simplify to category labels) 
@@ -96,13 +79,6 @@ df_train['Total_Area'] = np.log(df_train['Total_Area'])
 - BsmtExposure (will simplify category labels)
 - BsmtFinType1 (will simplify category labels)
 - PavedDrive  (will simplify category labels)
-		
+- GarageQual (will simplify category labels) 		
 
-Kc_complete_var_list= ['SalePrice_log','SalePrice','HasGasHeating','HasSBrkr','HasEx','HasGd',
- 'HasGLQ','HasPavedDrive','BsmtCond_0','BsmtCond_1','BsmtCond_2','BsmtCond_3','BsmtCond_4',
- 'HeatingQC_0','HeatingQC_1','HeatingQC_2','HeatingQC_3','HeatingQC_4','CentralAir_0',
- 'CentralAir_1','KitchenQual_0','KitchenQual_1','KitchenQual_2','KitchenQual_3','FireplaceQu_0',
- 'FireplaceQu_1','FireplaceQu_2','FireplaceQu_3','FireplaceQu_4','FireplaceQu_5','GarageType_0',
- 'GarageType_1','GarageType_2','GarageType_3','GarageType_4','GarageType_5','GarageType_6',
- 'GarageFinish_0','GarageFinish_1','GarageFinish_2','GarageFinish_3','GarageQual_0','GarageQual_1',
- 'GarageQual_2','GarageQual_3','GarageQual_4','GarageQual_5']
+Kc_complete_var_list= 
