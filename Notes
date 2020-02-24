@@ -1,0 +1,103 @@
+Notes: 
+- Response variable: maybe do BoxCox to see if normality better than log-trans
+
+- Continuous Variables:
+	- Remove outliers
+		- LotFrontage
+		- LotArea
+		- MasVnrArea
+		- BsmtFinSF1
+		- TotalBsmnSF
+		- 1stFlrSF
+		- 2ndFlrSF
+		- GrLivArea
+	- Remove variables
+		- BsmtFinSF2
+		- LowQualFinSF
+		- MiscVal
+		- GarageYrBlt
+
+- Discreet Numerical Variables:
+	- Remove variables
+		- MoSold
+		- OverallCond (remove, OverallQual higher correlation)
+		- BedroomAbvGr (totalrooms higher correlation)
+		- KitchenAbvGr
+		- Fireplaces (creating binary)
+		- PoolArea
+		- MoSold
+		- YrSold (calculate age instead)
+		- GarageCars (turn into categorical)
+
+- Categorical Variables:
+	- Notes
+		- Fence = NA means no fence (impute when dummifying)
+		- Alley = NA means no alley access (impute when dummifying)
+	- Remove
+		- Fence                    
+		- MiscFeature                  
+		- SaleType                  
+		- PoolQC                    
+		- BsmtFinType2              
+		- Functional                
+		- GarageCond               
+		- SaleCondition            
+		
+		- Heating (will simplify to categorical labels)       see below            
+		- Electrical (will simplify to category labels) 
+		- BsmtQual (will simplify category labels)  
+		- BsmtExposure (will simplify category labels)  
+		
+		
+		- Street
+
+
+- Feature Engineering:
+
+	Jon to-do
+	- Total Area = GrLivArea + TotalBsmSF  
+	- Total Finished Area = GrLivArea + Finished Basement area   
+	- Has2ndFl = has second floor (0 and 1)
+	- Age_Built = YrSold - YearBuilt
+	- Age_remod = YrSold - YearRemodAdd
+	- TotalPorchSF =  OpenPorchSF + EnclosedSF + 3SsnPorch + ScreenPorch
+	- HasDeck = 0 (no), 1 (yes)
+	- HasPorch = 0 (no), 1 (yes)
+	- TotBaths = Fullbath + 0.5*Halfbath (both in house and basement)
+	- HasFirePlace = 0 (no), 1 (not-Ex), 2 (Ex)
+	- GarageCars = 0, 1, 2, 3+ categorical
+	- HasPool?
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+some helpful code: HasDeck and HasPorch
+#create column for new variable (one is enough because it's a binary categorical feature)
+#if area>0 it gets 1, for area==0 it gets 0
+
+df_train['HasDeck'] = pd.Series(len(df_train['WoodDeckSF']), index=df_train.index)
+df_train['HasDeck'] = 0 
+df_train.loc[df_train['WoodDeckSF']>0,'HasDeck'] = 1
+
+Total area skewness: cone shape in scatter plot? Need equal levels of variance across the range of Total Area:
+#data transformation
+df_train['Total_Area'] = np.log(df_train['Total_Area'])
+
+
+	Kailun to-do
+	- 'Heating' HasGasHeating = 0 (no), 1 (yes) group GasA and GasW into one group= 1 (yes) 
+	- 'Electrical' HasSBrkr = 0 (no), 1 (yes)  
+     
+	- 'BsmtQual' HasEx = 0(no), 1(yes)     
+	- 'BsmntExposure' HasGd= 0 (None, No, Mn, Av), 1 (Gd)
+	- 'BsmtFinType1' HasGLQ = 0 (rest), 1 (GLQ)
+
+	- 'PavedDrive' HasPavedDrive = 0 (N,P), 1 (Y)
+
+- Heating (will simplify category labels)
+- Electrical (will simplify to category labels) 
+- BsmtQual (will simplify category labels)  
+- BsmtExposure (will simplify category labels)
+- BsmtFinType1 (will simplify category labels)
+- PavedDrive  (will simplify category labels)
+
+
+
