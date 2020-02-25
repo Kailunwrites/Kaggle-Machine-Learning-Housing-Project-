@@ -48,6 +48,9 @@ hp$GarageFinish[is.na(hp$GarageFinish)] = 'No Garage'
 hp$GarageQual = factor(hp$GarageQual, levels = c(levels(hp$GarageQual), 'No Garage'))
 hp$GarageQual[is.na(hp$GarageQual)] = 'No Garage'
 
+hp$GarageCond = factor(hp$GarageCond, levels = c(levels(hp$GarageCond), 'No Garage'))
+hp$GarageCond[is.na(hp$GarageCond)] = 'No Garage'
+
 hp$PoolQC = factor(hp$PoolQC, levels = c(levels(hp$PoolQC), 'No Pool'))
 hp$PoolQC[is.na(hp$PoolQC)] = 'No Pool'
 
@@ -56,6 +59,12 @@ hp$Fence[is.na(hp$Fence)] = 'No Fence'
 
 hp$MiscFeature = factor(hp$Fence, levels = c(levels(hp$MiscFeature), 'None'))
 hp$MiscFeature[is.na(hp$MiscFeature)] = 'None'
+
+hp$LotFrontage[is.na(hp$LotFrontage)] = 0
+hp$MasVnrType[is.na(hp$MasVnrType)] = 'None'
+hp$MasVnrArea[is.na(hp$MasVnrArea)] = 0
+
+hp <- hp %>% mutate(GarageYrBlt = ifelse(GarageType == 'No Garage', YearBuilt, GarageYrBlt))
 
 # building lm ####
 baselinemodel <- lm(data = hp,
