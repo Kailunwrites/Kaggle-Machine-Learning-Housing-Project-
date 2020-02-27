@@ -79,8 +79,8 @@ hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
 ## Export/Import R Environment
 
 ```{r exporting to RData}
-rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
-save.image(file = "../Data/train_all.RData")
+# rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
+# save.image(file = "../Data/train_all.RData")
 ```
 
 Data Exported:
