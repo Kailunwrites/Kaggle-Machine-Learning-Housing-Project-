@@ -1,3 +1,5 @@
+# attempt in exploration of data from scratch in R
+
 #library ####
 library(dplyr)
 library(ggplot2)
