@@ -1,0 +1,109 @@
+---
+title: "R Env Setup"
+author: "Richard Kim"
+date: "2/26/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##preemptive work
+
+Call dplyr, set working directory, call csv, drop default assigned ID col.
+
+```{r load hp_orig and hp_feat}
+library(dplyr)
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+hp_train <- read.csv('../Data/train.csv')
+
+hp_orig <- read.csv('../Data/train_all_original.csv')
+hp_feat <- read.csv('../Data/train_all_feature.csv')
+
+hp_orig <- hp_orig %>% select(-X)
+hp_feat <- hp_feat %>% select(-X)
+```
+
+## Defining Columns
+
+```{r original}
+
+# hp_orig <- read.csv('../Data/train_all_original.csv')
+# hp_orig <- hp_orig %>% select(-X)
+
+orig_cat_RK= c('Alley','BldgType','Exterior1st', 'Condition1', 'Condition2', 'Exterior2nd', 'Foundation', 'HouseStyle', 'LandContour','LotConfig', 'MasVnrType', 'MSZoning', 'RoofMatl', 'Neighborhood') 
+#Street (2 lvl),  'Utilities' (2 lvl)
+#MSSubClass Missing
+orig_ord_RK= c('ExterCond', 'ExterQual', 'LandSlope', 'LotShape')
+
+orig_cat_KC= c('Electrical_combined', 'GarageType_combined',  'GarageQual_combined', 'SaleType_combined') 
+#HasGasHeating (2 lvl), CentralAir_Y -> HasCentralAir (2 lvl), 'HasPavedDrive' (2 lvl), 'SaleCond_combined' (2 lvl)
+orig_ord_KC= c('BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2', 'HeatingQC', 'KitchenQual', 'Functional', 'FireplaceQu', 'GarageFinish', 'GarageCond', 'Fence')
+
+orig_cat_JH= c('MoSold')
+#'YrSold', 'GarageYrBlt'
+
+orig_cat = c(orig_cat_RK, orig_cat_KC, orig_cat_JH)
+orig_ord = c(orig_ord_KC, orig_ord_RK)
+
+hp_orig <- hp_orig %>% mutate_at(orig_cat, as.factor)
+# hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
+
+# str(hp_orig)
+```
+
+Note: columns with 2 level factors are not converted to factors, but noted.
+
+```{r featured}
+
+hp_feat <- read.csv('../Data/train_all_feature.csv')
+hp_feat <- hp_feat %>% select(-X)
+
+#fixing GarageYrBlt and ExterQual
+hp_feat$GarageYrBlt <- hp_orig$GarageYrBlt
+hp_feat$ExterQual <- factor(hp_feat$ExterQual, levels = c('Po', 'Fa', 'TA', 'Gd', 'Ex'))
+hp_feat$ExterQual <- as.numeric(hp_feat$ExterQual)
+
+#
+feat_cat = c('MSSubClass', 'NeighborhoodType', 'MoSold')
+feat_ord = c('OverallQual', 'OverallCond', 'ExterQual')
+
+hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
+# hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
+
+# str(hp_feat)
+```
+
+## Export/Import R Environment
+
+```{r exporting to RData}
+rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
+save.image(file = "../Data/train_all.RData")
+```
+
+Data Exported:
+hp_train - df from train.csv
+hp_orig - df from train_all_original.csv
+hp_feat - df from train_all_feature.csv
+
+feat_cat - vector of column names that are strictly categorical in hp_feat
+feat_ord - vector of column names that are ordinal in hp_feat
+orig_cat - vector of column names that are strictly categorical in hp_orig
+orig_ord - vector of column names that are ordinal in hp_orig
+
+To Import Data,
+```{r importing RData}
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# load('../Data/train_all.RData')
+```
+
+Note: all ordinal categories are loaded in as numbers in hp_orig and hp_feat
+To change them to factors,
+```{r ordinal to factor}
+# hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
+# hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
+```
+
+
