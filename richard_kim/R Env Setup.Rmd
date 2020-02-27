@@ -17,7 +17,7 @@ Call dplyr, set working directory, call csv, drop default assigned ID col.
 library(dplyr)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-hp_train <- read.csv('../Data/train.csv')
+# hp_train <- read.csv('../Data/train.csv')
 
 hp_orig <- read.csv('../Data/train_all_original.csv')
 hp_feat <- read.csv('../Data/train_all_feature.csv')
@@ -79,12 +79,11 @@ hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
 ## Export/Import R Environment
 
 ```{r exporting to RData}
-# rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
-# save.image(file = "../Data/train_all.RData")
+rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
+save.image(file = "../Data/train_all.RData")
 ```
 
 Data Exported:
-hp_train - df from train.csv
 hp_orig - df from train_all_original.csv
 hp_feat - df from train_all_feature.csv
 
@@ -105,5 +104,8 @@ To change them to factors,
 # hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
 # hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
 ```
+
+
+
 
 
