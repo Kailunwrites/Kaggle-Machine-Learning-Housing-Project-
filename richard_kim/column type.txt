@@ -1,0 +1,43 @@
+Columns			Type
+
+Alley			Cat
+
+BldgType		Cat
+
+Condition1		Cat  
+
+Condition2		Cat
+
+ExterCond		Ord
+
+Exterior1st		Cat
+
+Exterior2nd		Cat
+
+ExterQual		Ord
+
+Foundation		Cat
+
+HouseStyle		Cat
+
+LandContour		Cat
+
+LandSlope		Ord
+
+LotConfig		Cat
+
+LotShape		Ord
+
+MasVnrType		Cat 
+
+MSSubClass		Cat
+
+MSZoning		Cat
+
+Neighborhood	Cat
+
+RoofMatl		Cat
+
+Street			Cat
+
+Utilities		Cat

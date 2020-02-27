@@ -1,0 +1,202 @@
+Key for column levels
+
+Alley
+	1	"Grvl"
+	2	"Pave"
+	3	"No Alley"
+
+BldgType
+	1	"1Fam"
+	2	"2fmCon"
+	3	"Duplex"
+	4	"Twnhs"
+	5	"TwnhsE"
+
+Condition1
+	1	"Artery"
+	2	"Feedr"
+	3	"Norm"
+	4	"PosA"
+	5	"PosN"
+	6	"RRAe"
+	7	"RRAn"
+	8	"RRNe"  
+	9	"RRNn"  
+
+Condition2
+	1	"Artery"
+	2	"Feedr"
+	3	"Norm"
+	4	"PosA"
+	5	"PosN"
+	6	"RRAe"
+	7	"RRAn"
+	8	"RRNe"  
+	9	"RRNn" 
+
+ExterCond
+	1	"Po"
+	2	"Fa"
+	3	"TA"
+	4	"Gd"
+	5	"Ex"
+
+Exterior1st
+	1	"AsbShng"
+	2	"AsphShn"
+	3	"BrkComm"
+	4	"BrkFace"
+	5	"CBlock"
+	6	"CemntBd"
+	7	"HdBoard"
+	8	"ImStucc"
+	9	"MetalSd"
+	10	"Plywood"
+	11	"Stone"
+	12	"Stucco"
+	13	"VinylSd"
+	14	"Wd Sdng"
+	15	"WdShing"
+	16	"Other"
+
+Exterior2nd
+	1	"AsbShng"
+	2	"AsphShn"
+	3	"BrkComm"
+	4	"BrkFace"
+	5	"CBlock"
+	6	"CemntBd"
+	7	"HdBoard"
+	8	"ImStucc"
+	9	"MetalSd"
+	10	"Plywood"
+	11	"Stone"
+	12	"Stucco"
+	13	"VinylSd"
+	14	"Wd Sdng"
+	15	"WdShing"
+	16	"Other"
+
+ExterQual
+	1	"Po"
+	2	"Fa"
+	3	"TA"
+	4	"Gd"
+	5	"Ex"
+
+Foundation
+	1	"BrkTil"
+	2	"CBlock"
+	3	"PConc"
+	4	"Slab"
+	5	"Stone"
+	6	"Wood"  
+
+HouseStyle
+	1	"1.5Fin"
+	2	"1.5Unf"
+	3	"1Story"
+	4	"2.5Fin"
+	5	"2.5Unf"
+	6	"2Story"
+	7	"SFoyer"
+	8	"SLvl" 
+
+LandContour
+	1	"Bnk"
+	2	"HLS"
+	3	"Low"
+	4	"Lvl"
+
+LandSlope
+	1	"Gtl"
+	2	"Mod"
+	3	"Sev"
+
+LotConfig
+	1	"Corner"
+	2	"CulDSac"
+	3	"FR2"
+	4	"FR3"
+	5	"Inside" 
+
+LotShape
+	1	"Reg"
+	2	"IR1"
+	3	"IR2"
+	4	"IR3"
+
+MasVnrType
+	1	"BrkCmn"
+	2	"BrkFace"
+	3	"None"
+	4	"Stone"  
+
+MSSubClass
+ 	1	"20" 
+ 	2	"30"
+ 	3	"40"
+ 	4	"45"
+ 	5	"50"
+ 	6	"60"
+ 	7	"70"
+ 	8	"75"
+ 	8	"80"
+ 	9	"85"
+ 	10	"90"
+ 	11	"120"
+	12	"160"
+	13	"180"
+	14	"190"
+
+MSZoning
+	1	"C (all)"
+	2	"FV"
+	3	"RH"
+	4	"RL"
+	5	"RM" 
+
+Neighborhood
+	1	"Blmngtn"
+	2	"Blueste"
+	3	"BrDale"
+	4	"BrkSide"
+	5	"ClearCr"
+	6	"CollgCr"
+	7	"Crawfor"
+	8	"Edwards"
+	9	"Gilbert"
+	10	"IDOTRR"
+	11	"MeadowV"
+	12	"Mitchel"
+	13	"NAmes"
+	14	"NoRidge"
+	15	"NPkVill"
+	16	"NridgHt"
+	17	"NWAmes"
+	18	"OldTown"
+	19	"Sawyer"
+	20	"SawyerW"
+	21	"Somerst"
+	22	"StoneBr"
+	23	"SWISU"
+	24	"Timber"
+	25	"Veenker"
+
+RoofMatl
+	1	"ClyTile"
+	2	"CompShg"
+	3	"Membran"
+	4	"Metal"
+	5	"Roll"
+	6	"Tar&Grv"
+	7	"WdShake"
+	8	"WdShngl"
+
+Street
+	1	"Grvl"
+	2	"Pave"
+
+Utilities
+	1	"AllPub"
+	2	"NoSeWa"
