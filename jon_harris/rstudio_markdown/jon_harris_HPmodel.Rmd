@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message=FALSE)
 library(dplyr)    #data manipulation
 library(ggplot2)  #ploting
 library(xgboost)  #xgboost for gradient tree model
-library(caret)    #for ML
 
 ```
 
@@ -27,202 +26,227 @@ hp_feat = hp_feat %>% select(-SalePrice) #remove ID and sales price
 hp_orig = hp_orig %>% rename(SalePrice = SalePrice_y, SalePrice_log = SalePrice_log_y) %>%
   select(-SalePrice) #correct name from merging datasets
 
-train_idx = sample(1:nrow(hp_feat), .7*nrow(hp_feat))
+train_idx = sample(1:nrow(hp_feat), .7*nrow(hp_feat)) #train/test idx split
 
 ```
 
-#XGBoost Model 1: Feature-Engineered Dataset
-```{r}
 
-#Prepare predictor and response matrices
-predictors_train = data.matrix(hp_feat %>% select(-SalePrice_log, -Id)) #must be matrix
-response_train = data.matrix(hp_feat %>% select(SalePrice_log, -Id))    #must be matrix
-
-#2nd model: original data, no hypertuning
-xgb.feat <- xgb.cv(
-  data = predictors_train,      #Predictor variables
-  label = response_train,       #Response variable
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
-  early_stopping_rounds = 10    #haults CV if MSE doesn't improve
-)
-
-#Calculate RMSE of train and test 
-  #RMSE_train = ~0.0266318
-  #RMSE_test = ~0.1416268
-xgb.feat$evaluation_log %>%
-  summarise(
-    rmse_train = min(train_rmse_mean),
-    rmse_test = min(test_rmse_mean),
-  )
-
-#Plot RMSE vs Number of Trees
-ggplot(xgb.feat$evaluation_log) +
-  geom_line(aes(iter, train_rmse_mean, color = 'Train')) +
-  geom_line(aes(iter, test_rmse_mean, color = 'Test')) +
-  labs(x='Number of Trees', y='RMSE', title='Feature-Engineer Dataset: Train RMSE vs. Number of Trees')
-
-#Create model XGBoost model
-xgb.feat_test <- xgboost(
-  data = predictors_train,      #Predictor variables
-  label = response_train,       #Response variable
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
-)
-
-#Plot variable importance of 'test' subset of train data
-importance_matrix = xgb.importance(model = xgb.feat_test) #create matrix
-xgb.plot.importance(importance_matrix, top_n = 20, measure = "Gain") 
-
-#Predict SalePrice_log of 'test' subset of train data 
-test_df = data.matrix(hp_feat[-train_idx,] %>% select(-Id, -SalePrice_log)) #isolate test data
-xgb_pred = predict(xgb.feat_test, test_df) #predict saleprice_log
-
-#Calculate MSE of 'test' subset of train data
-  #MSE = 2.128978e-06
-MSE.feat = mean((xgb_pred - hp_feat$SalePrice_log[-train_idx])^2)
-MSE.feat
-
-#How much is the prediction price off from the actual 'test' price?
-pred_dol = exp(xgb_pred) #predicted house price [$]
-act_dol = exp(hp_feat$SalePrice_log[-train_idx]) #actual house price (test subset of training dataset) [$]
-mean(abs(pred_dol-act_dol))
-
-```
-
-#XGBoost Model 2: Original Dataset
+#XGBoost Model 1: Original Dataset
 ```{r}
 
 #Prepare predictor and response matrices
 predictors_train = data.matrix(hp_orig %>% select(-SalePrice_log, -Id)) #must be matrix
 response_train = data.matrix(hp_orig %>% select(SalePrice_log, -Id))    #must be matrix
 
-#2nd model: original data, no hypertuning
-xgb.orig <- xgb.cv(
-  data = predictors_train,      #Predictor variables
-  label = response_train,       #Response variable
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
-  early_stopping_rounds = 10    #haults CV if MSE doesn't improve
+#1st model: original data, no hypertuning
+xgb.orig = xgb.cv(
+  data = predictors_train,     #Predictor variables
+  label = response_train,      #Response variable
+  nrounds = 1000,              #Num of trees
+  nfold = 5,                   #Number of folds (~5-10)
+  objective = "reg:linear",    #Linear regression
+  verbose = 0,                 #No output
+  early_stopping_rounds = 50,  #haults CV if MSE doesn't improve after 10 trees
 )
 
-#Calculate RMSE of train and test 
-  #RMSE_train = ~0.0082528		
-  #RMSE_test = ~0.1338334
+#Calculate RMSE of train and test
+#RMSE_train = ~ 0.0213422		
+#RMSE_test = ~ 0.136773
 xgb.orig$evaluation_log %>%
-  summarise(
-    rmse_train = min(train_rmse_mean),
-    rmse_test = min(test_rmse_mean),
-  )
+  summarise(rmse_train = min(train_rmse_mean),
+            rmse_test = min(test_rmse_mean),)
 
 #Plot RMSE vs Number of Trees
 ggplot(xgb.orig$evaluation_log) +
   geom_line(aes(iter, train_rmse_mean, color = 'Train')) +
   geom_line(aes(iter, test_rmse_mean, color = 'Test')) +
-  labs(x='Number of Trees', y='RMSE', title='Original Dataset: Train RMSE vs. Number of Trees')
+  labs(x = 'Number of Trees', y = 'RMSE', title = 'Original Dataset: Train RMSE vs. Number of Trees')
 
-#Create model XGBoost model
-xgb.orig_test <- xgboost(
-  data = predictors_train,      #Predictor variables
-  label = response_train,       #Response variable
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
+# #Create model XGBoost model
+# xgb.orig_test <- xgboost(
+#   data = predictors_train,
+#   #Predictor variables
+#   label = response_train,
+#   #Response variable
+#   nrounds = 1000,
+#   #Num of trees
+#   nfold = 5,
+#   #Number of folds (~5-10)
+#   objective = "reg:linear",
+#   #Linear regression
+#   verbose = 0,
+#   #No output
+# )
+# 
+# #Plot variable importance of 'test' subset of train data
+# importance_mat.orig = xgb.importance(model = xgb.orig_test) #create matrix
+# xgb.plot.importance(importance_mat.orig, top_n = 20, measure = "Gain")
+# 
+# #Predict SalePrice_log of 'test' subset of train data
+# test_df = data.matrix(hp_orig[-train_idx, ] %>% select(-Id, -SalePrice_log)) #isolate test data
+# xgb_pred.orig = predict(xgb.orig_test, test_df) #predict saleprice_log
+# 
+# #Calculate MSE of 'test' subset of train data
+# #MSE.orig = 1.555677e-06
+# MSE.orig = mean((xgb_pred.orig - hp_orig$SalePrice_log[-train_idx]) ^ 2)
+# MSE.orig
+# 
+# #How much is the prediction price off from the actual 'test' price?
+# pred_dol = exp(xgb_pred.orig) #predicted house price [$]
+# act_dol = exp(hp_orig$SalePrice_log[-train_idx]) #actual house price (test subset of training dataset) [$]
+# mean(abs(pred_dol - act_dol))
+
+```
+
+#Feature Engineering: Transform Continuous Data
+```{r}
+
+#Add non-categorical variables from featured dataset to original dataset
+df1 = hp_orig %>% select(-GarageCars)
+df2 = hp_feat %>% select(TotalSF, Age, AgeRemod, TotPorchSF, TotCarGarage, TotBaths)
+orig_cont = cbind.data.frame(df1, df2)
+
+#Transform continuous data if skewed
+cont_var = orig_cont %>% select(
+  LotFrontage,
+  LotArea,
+  YearBuilt,
+  YearRemodAdd,
+  MasVnrArea,
+  BsmtFinSF1,
+  BsmtFinSF2,
+  BsmtUnfSF,
+  TotalBsmtSF,
+  X1stFlrSF,
+  X2ndFlrSF,
+  LowQualFinSF,
+  GrLivArea,
+  GarageYrBlt,
+  GarageArea,
+  WoodDeckSF,
+  OpenPorchSF,
+  EnclosedPorch,
+  X3SsnPorch,
+  ScreenPorch,
+  PoolArea,
+  MoSold,
+  YrSold
 )
 
-#Plot variable importance of 'test' subset of train data
-importance_matrix = xgb.importance(model = xgb.orig_test) #create matrix
-xgb.plot.importance(importance_matrix, top_n = 20, measure = "Gain") 
+#Transform if Skewed
+for (var in 1:ncol(cont_var)) {
+  if (abs(skew(cont_var[, var])) > 0.8) {
+    cont_var[, var] = log(cont_var[, var] + 1)
+  }}
 
-#Predict SalePrice_log of 'test' subset of train data 
-test_df = data.matrix(hp_orig[-train_idx,] %>% select(-Id, -SalePrice_log)) #isolate test data
-xgb_pred = predict(xgb.orig_test, test_df) #predict saleprice_log
 
-#Calculate MSE of 'test' subset of train data
-  #MSE.orig = 1.555677e-06
-MSE.orig = mean((xgb_pred - hp_orig$SalePrice_log[-train_idx])^2)
-MSE.orig
 
-#How much is the prediction price off from the actual 'test' price?
-pred_dol = exp(xgb_pred) #predicted house price [$]
-act_dol = exp(hp_orig$SalePrice_log[-train_idx]) #actual house price (test subset of training dataset) [$]
-mean(abs(pred_dol-act_dol))
 
 ```
 
 
-#XGBoost Model3: Combine Original and Featured Datasets
+#XGBoost Model 2: Feature-Engineered Dataset
 ```{r}
 
-#Previously, model2 (orig df) outperformed model1 (df)
-#Want to combine to maximize best columns
-uniq = c(setdiff(names(hp_feat),names(hp_orig)), 'Id')
-combined = merge(hp_orig, hp_feat[uniq], by='Id')
-combined_train = combined[train_idx,]
+#Prepare predictor and response matrices
+predictors_train = data.matrix(hp_feat %>% select(-SalePrice_log, -Id)) #must be matrix
+response_train = data.matrix(hp_feat %>% select(SalePrice_log, -Id))    #must be matrix
 
-#Prep Feature and Response Data
-predictors_train = data.matrix(combined_train %>% select(-SalePrice_log, -Id)) #must be matrix
-response_train = data.matrix(combined_train %>% select(SalePrice_log, -Id))    #must be matrix
-
-#3rd Model: Combined Variables, No Hyperparameter Tuning
-xgb.comb <- xgb.cv(
-  data = predictors_train,
-  label = response_train,
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
-  early_stopping_rounds = 10    #haults CV if MSE doesn't improve
+#Model: feature-engineered data, no hypertuning
+xgb.feat = xgb.cv(
+  data = predictors_train,     #Predictor variables
+  label = response_train,      #Response variable
+  nrounds = 1000,              #Num of trees
+  nfold = 5,                   #Number of folds (~5-10)
+  objective = "reg:linear",    #Linear regression
+  verbose = 0,                 #No output
+  early_stopping_rounds = 10,  #haults CV if MSE doesn't improve
+  save_name = 'xgb.feat.model' #save model
 )
 
-#Calculate RMSE of train and test 
-  #RMSE_train = ~0.0069476		
-  #RMSE_test = ~0.142179
-xgb.comb$evaluation_log %>%
-  summarise(
-    rmse_train   = min(train_rmse_mean),
-    rmse_test   = min(test_rmse_mean),
-  )
+#Calculate RMSE of train and test
+  #RMSE_train = ~0.037697
+  #RMSE_test = ~0.1365288
+xgb.feat$evaluation_log %>%
+  summarise(rmse_train = min(train_rmse_mean),
+            rmse_test = min(test_rmse_mean))
 
 #Plot RMSE vs Number of Trees
-ggplot(xgb.orig$evaluation_log) +
+ggplot(xgb.feat$evaluation_log) +
   geom_line(aes(iter, train_rmse_mean, color = 'Train')) +
   geom_line(aes(iter, test_rmse_mean, color = 'Test')) +
-  labs(x='Number of Trees', y='RMSE', title='Combined Dataset: Train RMSE vs. Number of Trees')
+  labs(x = 'Number of Trees', y = 'RMSE', title = 'Feature-Engineer Dataset: Train RMSE vs. Number of Trees')
 
-#Create model XGBoost model
-xgb.comb_test <- xgboost(
-  data = predictors_train,
-  label = response_train,
-  nrounds = 1000,               #Num of trees
-  nfold = 5,                    #Number of folds (~5-10)
-  objective = "reg:linear",     #Linear regression
-  verbose = 0,                  #No output
-)
+# #Create model XGBoost model
+# xgb.feat_test <- xgboost(
+#   data = predictors_train,
+#   #Predictor variables
+#   label = response_train,
+#   #Response variable
+#   nrounds = 1000,
+#   #Num of trees
+#   nfold = 5,
+#   #Number of folds (~5-10)
+#   objective = "reg:linear",
+#   #Linear regression
+#   verbose = 0,
+#   #No output
+# )
+# 
+# #Plot variable importance of 'test' subset of train data
+# importance_mat.feat = xgb.importance(model = xgb.feat_test) #create matrix
+# xgb.plot.importance(importance_mat.feat, top_n = 20, measure = "Gain")
+# 
+# #Predict SalePrice_log of 'test' subset of train data
+# test_df = data.matrix(hp_feat[-train_idx, ] %>% select(-Id, -SalePrice_log)) #isolate test data
+# xgb_pred.feat = predict(xgb.feat_test, test_df) #predict saleprice_log
+# 
+# #Calculate MSE of 'test' subset of train data
+# #MSE = 2.128978e-06
+# MSE.feat = mean((xgb_pred.feat - hp_feat$SalePrice_log[-train_idx]) ^ 2)
+# MSE.feat
+# 
+# #How much is the prediction price off from the actual 'test' price?
+# pred_dol = exp(xgb_pred.feat) #predicted house price [$]
+# act_dol = exp(hp_feat$SalePrice_log[-train_idx]) #actual house price (test subset of training dataset) [$]
+# mean(abs(pred_dol - act_dol))
 
-#Plot variable importance of 'test' subset of train data
-importance_matrix = xgb.importance(model = xgb.comb_test)
-xgb.plot.importance(importance_matrix, top_n = 20, measure = "Gain")
+```
 
-#Predict SalePrice_log of 'test' subset of train data 
-test_df = data.matrix(combined[-train_idx,] %>% select(-Id, -SalePrice_log))
-xgb_pred = predict(xgb.comb_test, test_df)
+#Additional Feature Engineering
+```{r}
 
-#Calculate MSE of 'test' subset of train data
-  #MSE.comb = 0.01627476
-MSE.comb = mean((xgb_pred - combined$SalePrice_log[-train_idx])^2)
-MSE.comb
+# - eta (default = 0.03) 
+# 	- Learning rate
+# 	- Typically 0.01-0.02
+# 
+# - min_child_weight
+# 	- min sum of weights of all obs required in a child
+# 
+# - max_depth (default = 6)
+# 	- Max depth of trees
+# 	- Typically 3-10
+# 
+# - max_leaf_nodes
+# 	- max number of terminal nodes/leaves in a tree
+# 
+# - subsample
+# 	- Denotes fraction of obs to be randomly sampled for each tree
+# 	- Typically 0.5-1
+# 
+# - colsample_bytree
+# 	- Denotes subsample ratio of col for each split
+# 
+# - alpha
+# 	- l1 regularization (lasso) term on weight
+# 
+# - scale_pos_weight (default = 1)
+# 	- >0 in case of high class imbalance
 
-#How much is the prediction price off from the actual 'test' price?
-pred_dol = exp(xgb_pred) #predicted house price [$]
-act_dol = exp(combined$SalePrice_log[-train_idx]) #actual house price (test subset of training dataset) [$]
-mean(abs(pred_dol-act_dol))
+df1 = hp_orig %>% select(-GarageCars)
+df2 = hp_feat %>% select(TotalSF, Age, AgeRemod, TotPorchSF, TotCarGarage, TotBath)
+
+
+orig_cont = cbind.data.frame(hp_orig, hp_feat['TotalSF', 'Age', 'AgeRemod', 'TotPorchSF', 'TotCarGarage', 'TotBath'])
 
 ```
