@@ -1,7 +1,7 @@
 ---
-title: "R Env Setup"
-author: "Richard Kim"
-date: "2/26/2020"
+title: "R Env Setup - test"
+author: "RK, KC, JH"
+date: "2/29/2020"
 output: pdf_document
 ---
 
@@ -19,11 +19,14 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # hp_train <- read.csv('../Data/train.csv')
 
-hp_orig <- read.csv('../Data/train_all_original.csv')
-hp_feat <- read.csv('../Data/train_all_feature.csv')
+hp_orig_test <- read.csv('../Data/test_all_original.csv')
+hp_feat_test <- read.csv('../Data/test_all_feature.csv')
 
-hp_orig <- hp_orig %>% select(-X)
-hp_feat <- hp_feat %>% select(-X)
+hp_orig_test <- hp_orig_test %>% select(-X)
+hp_feat_test <- hp_feat_test %>% select(-X)
+
+hp_orig_test <- hp_orig_test %>% rename(Id = Id_x)
+
 ```
 
 ## Defining Columns
@@ -48,7 +51,7 @@ orig_cat_JH= c('MoSold')
 orig_cat = c(orig_cat_RK, orig_cat_KC, orig_cat_JH, 'YrSold')
 orig_ord = c(orig_ord_KC, orig_ord_RK)
 
-hp_orig <- hp_orig %>% mutate_at(orig_cat, as.factor)
+hp_orig_test <- hp_orig_test %>% mutate_at(orig_cat, as.factor)
 # hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
 
 # str(hp_orig)
@@ -58,22 +61,24 @@ Note: columns with 2 level factors are not converted to factors, but noted.
 
 ```{r featured}
 
-hp_feat <- read.csv('../Data/train_all_feature.csv')
-hp_feat <- hp_feat %>% select(-X)
+hp_feat_test <- read.csv('../Data/test_all_feature.csv')
+hp_feat_test <- hp_feat_test %>% select(-X)
 
-#fixing GarageYrBlt, ExterQual, AgeRemod
+#fixing AgeRemod, YrSold, LowQualFinSF
 
-hp_feat$GarageYrBlt <- hp_orig$GarageYrBlt
+hp_feat_test$AgeRemod <- as.numeric(hp_orig_test$YrSold) - hp_orig_test$YearRemodAdd + 2005
 
-hp_feat$ExterQual <- factor(hp_feat$ExterQual, levels = c('Po', 'Fa', 'TA', 'Gd', 'Ex'))
-hp_feat$ExterQual <- as.numeric(hp_feat$ExterQual)
-hp_feat$AgeRemod <- as.numeric(hp_orig$YrSold) - hp_orig$YearRemodAdd + 2005
+hp_feat_test$YrSold <- hp_orig_test$YrSold
+hp_feat_test$BsmtFinSF2 <- hp_orig_test$BsmtFinSF2
+hp_feat_test$LowQualFinSF <- hp_orig_test$LowQualFinSF
+
 
 #
 feat_cat = c('MSSubClass', 'NeighborhoodType', 'MoSold', 'YrSold')
 feat_ord = c('OverallQual', 'OverallCond', 'ExterQual')
 
-hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
+
+hp_feat_test <- hp_feat_test %>% mutate_at(feat_cat, as.factor)
 # hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
 
 # str(hp_feat)
@@ -83,12 +88,13 @@ hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
 
 ```{r exporting to RData}
 rm(orig_cat_JH, orig_cat_KC, orig_cat_RK, orig_ord_KC, orig_ord_RK)
-save.image(file = "../Data/train_all.RData")
+save.image(file = "../Data/test_all.RData")
 ```
 
 Data Exported:
-hp_orig - df from train_all_original.csv
-hp_feat - df from train_all_feature.csv
+hp_orig_test - df from train_all_original.csv
+hp_feat_test - df from train_all_feature.csv
+
 
 feat_cat - vector of column names that are strictly categorical in hp_feat
 feat_ord - vector of column names that are ordinal in hp_feat
@@ -102,17 +108,5 @@ To Import Data:
 It should populate the Global Environment. 
 ```{r importing RData}
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-# load('../Data/train_all.RData')
+# load('../Data/test_all.RData')
 ```
-
-Note: all ordinal categories are loaded in as numbers in hp_orig and hp_feat
-To change them to factors,
-```{r ordinal to factor}
-# hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
-# hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
-```
-
-
-
-
-
