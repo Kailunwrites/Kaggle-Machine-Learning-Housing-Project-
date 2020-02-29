@@ -1,0 +1,241 @@
+---
+title: "Regularization_and_Cross_Validation_HW_Solutions"
+author: "NYC Data Science Academy"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message=FALSE)
+```
+
+## Question #1: Ridge Regression
+**Purpose: Demonstrate Understanding to Run Model**
+
+1. Load: Load in the Prostate.txt dataset into your workspace. This dataset comes from a study by Stamey et a. (1989) of prostate cancer, measuring the correlation between the level of a prostate-speci c antigen and some covariates. The included variables are the log-cancer volume, log-prostate weight, age of patient, log-amount of benign hyperplasia, seminal vesicle invasion, log-capsular penetration, Gleason score, and percent of Gleason scores 4 or 5; the response variable is the log-psa.
+```{r}
+prostate = read.table("https://s3.amazonaws.com/nycdsabt01/Prostate.txt", header = TRUE)
+
+```
+
+2. Train test split: Create an 80% - 20% train-test split with your data. Please use set.seed(0) so the results will be reproducible.
+```{r}
+x = model.matrix(lpsa ~ ., prostate)[, -1]
+y = prostate$lpsa
+
+set.seed(0)
+train = sample(1:nrow(x), nrow(x)*0.8)
+test = (-train)
+y.test = y[test]
+
+length(train)/nrow(x)  # 0.7938144
+length(y.test)/nrow(x) # 0.2061856
+
+```
+
+3.Fit a model: Use library glmnet to fit a ridge regression model on your training data by setting up a grid of lambda values 10^seq(5, -2, length = 100). Save the coefficients of these models in an object.
+```{r}
+grid = 10^seq(5, -2, length = 100)
+
+#  Fit the ridge regression. Alpha = 0 for ridge regression.
+library(glmnet)
+ridge.models = glmnet(x[train, ], y[train], alpha = 0, lambda = grid)
+```
+
+4. Visualization: Plot the coefficients of these models and comment on the shrinkage.
+```{r}
+plot(ridge.models, xvar = "lambda", label = TRUE, main = "Ridge Regression")
+#  Comment on the shrinkage
+#The coefficients all seem to shrink towards 0 as lambda gets quite large. 
+#Most coefficients are very close to 0 once the log lambda value gets to about 5.
+#However, in ridge regression coefficients are never exactly 0.
+
+```
+
+5. Cross Validation: Perform 10-fold cross validation and use set.seed(0) on your training data with the grid of lambda values defined in part 2. Save the output as an object.
+```{r}
+set.seed(0)
+cv.ridge.out = cv.glmnet(x[train, ], y[train], alpha = 0, nfolds = 10, lambda = grid)
+
+```
+
+6. Visualization: Create and interpret a plot associated with the 10-fold cross validation completed in part 4.
+```{r}
+plot(cv.ridge.out, main = "Ridge Regression\n")
+
+#The error seems to be reduced with a log lambda value of around -2.0002; 
+#this corresponts to a lambda value of about 0.135. This is the value of lambda
+#we should move forward with in our future analyses.
+```
+
+7. Results: What is the best lambda? 
+```{r}
+bestlambda.ridge = cv.ridge.out$lambda.min
+bestlambda.ridge       # 0.1353048
+log(bestlambda.ridge)  # -2.000225
+```
+
+8. Fit a model: Fit a ridge regression model using the best lambda on the test dataset. What is the test MSE associated with the best lambda value?
+```{r}
+ridge.bestlambdatrain = predict(ridge.models, s = bestlambda.ridge, newx = x[test, ])
+mean((ridge.bestlambdatrain - y.test)^2)  # 0.4913108
+#The test MSE is about 0.4913 with the best lambda.
+```
+
+9. Refit a model & Results: Refit the ridge regression using the best lambda in your original dataset. Briefly comment on the coefficient estimates and MSE. Why is this MSE smaller than the test MSE you found in part 7?
+```{r}
+ridge.best_refit = glmnet(x, y, alpha = 0, lambda = bestlambda.ridge)
+
+#  Coefficients
+predict(ridge.best_refit, s = bestlambda.ridge, type = "coefficients")
+#(Intercept) -0.038129777
+#lcavol       0.460638683
+#lweight      0.591222480
+#age         -0.014700329
+#lbph         0.081022541
+#svi          0.653878622
+#lcp         -0.014662260
+#gleason      0.068111379
+#pgg45        0.003106411
+
+#The coefficients have been shrunken towards 0. Most notably, it appears as though
+#the pgg45 veriable has been reduced the most, with a coefficient of only about 0.0031.
+#On the other hand, the svi, lweight, and lcavol have the highest coefficient values (all greater than 0.46), indicating that they are the stronger predictors.
+#NB: We cannot interpret these values directly because of the nature of the 
+#regularization process.
+
+# MSE
+ridge.bestlambda = predict(ridge.best_refit, s = bestlambda.ridge, newx = x)
+mean((ridge.bestlambda - y)^2)  # 0.4549825
+
+#The overall MSE is about 0.4550, which is a bit smaller than the test MSE 0.4913.
+#In general, the overall error rate calculated on the whole data is often underestimated simply because it incorporates the data in the construction of the model in the first place.
+
+```
+
+## Question #2: Machine Learning Theory
+**Purpose: Demonstrate Theory of Lecture Material**
+
+1. Lambda: What is lambda in Ridge, Lasso and Elastic Net regression? What is its function?
+ 
+```{r}
+#Lambda is the penalty coefficient in Ridge, Lasso, and Elastic Net regression.
+#The value of lambda determines the relative impact of the RSS and shinkage penalty term on the coefficient estimates to prevent the model from overfitting.
+#We use L2 and L1 norm regularization for the Ridge and Lasso regression respectively.
+#The Elastic Net penalty is a combination of L1 and L2 penalization.
+```
+
+2. Cross Validation: What is the purpose of doing cross validation? Explain the k-fold cross validation process.
+```{r}
+#The main purpose of cross validation is to get a sense of how the model might perform  on data that it has not seen yet. Without cross validation we only have information onhow our model performs on our in-sample data. By doing cross validation, we can check how the model performs when we have new data.
+
+#Kfold Process
+#1. Divide the training set into k folds
+#2. For each fold j from 1 to k, hold fold j out and train one model on the data       from the remaining k-1 folds. Then evaluate the model on the fold j that was       held out. Typical evaluation metrics include MSE for regression and logloss or     accuracy for classification.
+#3. Take the average of the errors from part 2 over the k folds. This is your cross-validation error.
+
+```
+
+3. Cross Validation: How should we choose cross validation folds typically? What does it mean when we choose a larger number of k-fold?
+```{r}
+#Empirically, using k=5 or k=10 yields test error rate estimates that suffer neither from excessively high bias nor from very high variance. There is a bias-variance tradeoff associated with the choice of k in k-fold cross-validation.
+
+#Larger k-fold means less bias towards overestimating the true expected error (as training folds will be closer to the total dataset) but higher variance and higher running time (as you are getting closer to Leave-One-Out CV, the limit case).
+#https://stats.stackexchange.com/questions/27730/choice-of-k-in-k-fold-cross-validation?answertab=oldest#tab-top
+
+```
+
+
+## Question #3:Challenge Questions- Lasso Regression
+
+1. Lasso Regression: Repeat the entire analysis performed in question #1, but use the lasso regression method this time.
+```{r}
+
+##3.1 Repeat the entire analysis using the lasso regression method.
+#3 Fit a model
+#Fitting the lasso regression. Alpha = 1 for lasso regression.
+lasso.models = glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
+
+
+#4 Visualization
+#  Plot the coefficients of these models
+plot(lasso.models, xvar = "lambda", label = TRUE, main = "Lasso Regression")
+
+#The coefficients all seem to shrink towards 0 as lambda gets quite large. 
+#All coefficients seem to go to 0 once the log lambda value gets to about 0. 
+#Note that coefficients are necessarily set to exactly 0 for lasso regression.
+
+
+#5 Cross Validation
+#  Perform 10-fold cross validation and use set.seed(0) on the training data
+set.seed(0)
+cv.lasso.out = cv.glmnet(x[train, ], y[train], alpha = 1, nfolds = 10, lambda = grid)
+
+
+#6 Visualization
+#  Create a plot associated with the 10-fold cross validation
+plot(cv.lasso.out, main = "Lasso Regression\n")
+
+
+#7 Results
+bestlambda.lasso = cv.lasso.out$lambda.min
+bestlambda.lasso       # 0.0367838
+log(bestlambda.lasso)  # -3.302698
+
+#The error seems to be reduced with a log lambda value of around -3.3027.
+#This corresponts to a lambda value of about 0.0368, which is the value of lambda
+#we should move forward with in our future analyses.
+
+
+#8 Fit a model
+#  Fit a lasso regression model using the best lambda on the test dataset.
+lasso.bestlambdatrain = predict(lasso.models, s = bestlambda.lasso, newx = x[test, ])
+mean((lasso.bestlambdatrain - y.test)^2)  # 0.5060285
+#The test MSE is about 0.5060 with the best lambda.
+
+
+#9 Refit a model & Results
+lasso.best_refit = glmnet(x, y, alpha = 1)
+
+# Coefficients
+predict(lasso.best_refit, type = "coefficients", s = bestlambda.lasso)
+#(Intercept)  0.1442980764
+#lcavol       0.5066665625
+#lweight      0.5433976279
+#age         -0.0080716635
+#lbph         0.0607690369
+#svi          0.5885646964
+#lcp          .           
+#gleason      0.0006617546
+#pgg45        0.0022821317
+
+#The coefficients have been shrunken towards 0; most notably, the lcp variable
+#has dropped out first and has a coefficient of exactly 0. Other variables like
+#gleason, pgg45, and age have pretty small coefficient values as well. 
+#Similar to the ridge regression scenario, the svi, lweight, and lcavol all have 
+#the largest coefficient estimates.
+
+# MSE
+lasso.bestlambda = predict(lasso.best_refit, s = bestlambda.lasso, newx = x)
+mean((lasso.bestlambda - y)^2)  # 0.4599577
+
+#The overall MSE is about 0.45996. Again, this is similar to the test MSE 0.506
+#we found above, but a little bit lower due to the way in which the model was
+#fit using the data at hand.
+
+```
+
+2. Compare: Compare your final ridge and lasso models. Which one would you choose to use? Why?
+```{r}
+predict(ridge.best_refit, type = "coefficients", s = bestlambda.ridge)
+predict(lasso.best_refit, type = "coefficients", s = bestlambda.lasso)
+mean((ridge.bestlambda - y)^2)  # 0.4549825
+mean((lasso.bestlambda - y)^2)  # 0.4599577
+
+#Both models appear to perform in a similar manner. Both the test MSEs and the
+#overall MSEs were approximately the same. Ultimately, the ridge regression MSE
+#was slightly lower than that of the lasso. Although this might be due to random
+#variability among our dataset, if we are strictly talking about "predictive"
+#power, we might choose to move forth with the ridge regression in this scenario.
+#On the other hand, the final lasso regression model drop the lcp variable altogether (setting its coefficient value to 0). If we are particularly interested in "dimension reduction and variable selection", we might favor of the lasso regression.
+```
+
+
