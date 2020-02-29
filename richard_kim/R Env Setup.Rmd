@@ -22,6 +22,8 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 hp_orig <- read.csv('../Data/train_all_original.csv')
 hp_feat <- read.csv('../Data/train_all_feature.csv')
 
+hp_orig <- as.data.frame(hp_orig)
+
 hp_orig <- hp_orig %>% select(-X)
 hp_feat <- hp_feat %>% select(-X)
 ```
@@ -45,7 +47,7 @@ orig_ord_KC= c('BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinT
 orig_cat_JH= c('MoSold')
 #'YrSold', 'GarageYrBlt'
 
-orig_cat = c(orig_cat_RK, orig_cat_KC, orig_cat_JH)
+orig_cat = c(orig_cat_RK, orig_cat_KC, orig_cat_JH, 'YrSold')
 orig_ord = c(orig_ord_KC, orig_ord_RK)
 
 hp_orig <- hp_orig %>% mutate_at(orig_cat, as.factor)
@@ -61,13 +63,26 @@ Note: columns with 2 level factors are not converted to factors, but noted.
 hp_feat <- read.csv('../Data/train_all_feature.csv')
 hp_feat <- hp_feat %>% select(-X)
 
-#fixing GarageYrBlt and ExterQual
+#fixing GarageYrBlt, ExterQual, AgeRemod
+
 hp_feat$GarageYrBlt <- hp_orig$GarageYrBlt
+
 hp_feat$ExterQual <- factor(hp_feat$ExterQual, levels = c('Po', 'Fa', 'TA', 'Gd', 'Ex'))
 hp_feat$ExterQual <- as.numeric(hp_feat$ExterQual)
+hp_feat$AgeRemod <- as.numeric(hp_orig$YrSold) - hp_orig$YearRemodAdd + 2005
+
+#imputing LotFrontage....? (it's already done)
+# nbhd <- hp_orig %>% group_by(Neighborhood) %>% summarise(a = mean(LotFrontage)) %>% mutate(Neighborhood = as.numeric(Neighborhood))
+
+# hp_orig %>% select(Neighborhood, LotFrontage) %>% 
+#   mutate(LotFrontage = ifelse(is.na(LotFrontage),
+#                           nbhd$a[as.numeric(Neighborhood)],
+#                           LotFrontage)) %>% .$LotFrontage
+
+#rm(nbhd)
 
 #
-feat_cat = c('MSSubClass', 'NeighborhoodType', 'MoSold')
+feat_cat = c('MSSubClass', 'NeighborhoodType', 'MoSold', 'YrSold')
 feat_ord = c('OverallQual', 'OverallCond', 'ExterQual')
 
 hp_feat <- hp_feat %>% mutate_at(feat_cat, as.factor)
@@ -92,7 +107,11 @@ feat_ord - vector of column names that are ordinal in hp_feat
 orig_cat - vector of column names that are strictly categorical in hp_orig
 orig_ord - vector of column names that are ordinal in hp_orig
 
-To Import Data,
+To Import Data:
+1. Create an empty R file
+2. Save it under your folder.
+3. At the beginning, copy+paste two lines below and run
+It should populate the Global Environment. 
 ```{r importing RData}
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # load('../Data/train_all.RData')
