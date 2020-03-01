@@ -6,6 +6,7 @@ library(glmnet)
 # call data ####
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 load('../Data/train_all.RData')
+load('../Data/test_all.RData')
 
 # remove SalePrice and ID####
 # unnecessary for lm
@@ -25,7 +26,7 @@ hp_feat_resp <- hp_feat$SalePrice_log
 
 # lasso ####
 
-# finding lambda for lasso ####
+# finding lambda for lasso ###
 # find lambda thru cross validation glmnet
 cv.lasso <- cv.glmnet(x = hp_feat_pred, 
                       y = hp_feat_resp,
@@ -38,7 +39,7 @@ cv.lasso <- cv.glmnet(x = hp_feat_pred,
 
 best_lambda_lasso <- cv.lasso$lambda.min
 
-# building lasso ####
+# building lasso ###
 lasso <- glmnet(x = hp_feat_pred, 
                 y = hp_feat_resp,
                 # family = 'gaussian',
@@ -48,12 +49,16 @@ lasso <- glmnet(x = hp_feat_pred,
                 trace.it = 1#show progress bar
                 # intercept = TRUE
                 )
-# coeffs
+# coeffs ###
 coef(lasso) 
+
+# predicting/rmse ###
+lasso_predicted <- predict(lasso, hp_feat_pred)
+ModelMetrics::rmse(hp_feat$SalePrice_log, lasso_predicted)
 
 # ridge ####
 
-# finding lambda for ridge ####
+# finding lambda for ridge ###
 # find lambda thru cross validation glmnet
 cv.ridge <- cv.glmnet(x = hp_feat_pred, 
                       y = hp_feat_resp,
@@ -66,7 +71,7 @@ cv.ridge <- cv.glmnet(x = hp_feat_pred,
 
 best_lambda_ridge <- cv.ridge$lambda.min
 
-# building ridge ####
+# building ridge ###
 ridge <- glmnet(x = hp_feat_pred, 
                 y = hp_feat_resp,
                 # family = 'gaussian',
@@ -76,8 +81,12 @@ ridge <- glmnet(x = hp_feat_pred,
                 trace.it = 1#show progress bar
                 # intercept = TRUE
 )
-# coeffs
+
+# coeffs ###
 coef(ridge)
 
+# predicting/rmse ###
+ridge_predicted <- predict(ridge, hp_feat_pred)
+ModelMetrics::rmse(hp_feat$SalePrice_log, ridge_predicted)
 
 
