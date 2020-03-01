@@ -15,14 +15,14 @@ Call dplyr, set working directory, call csv, drop default assigned ID col.
 
 ```{r load hp_orig and hp_feat}
 rm(list = ls(all.names = TRUE))
-library(dplyr)
+setwd("~/GitHub/Kaggle-Machine-Learning-Housing-Project-/kailun_cheng/R Markdowns_Modeling")
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+library(dplyr)
 
 # hp_train <- read.csv('../Data/train.csv')
 
-hp_orig <- read.csv('../Data/train_all_original.csv')
-hp_feat <- read.csv('../Data/train_all_feature.csv')
+hp_orig <- read.csv('train_all_original.csv')
+hp_feat <- read.csv('train_all_feature.csv')
 
 hp_orig <- hp_orig %>% select(-X)
 hp_feat <- hp_feat %>% select(-X)
@@ -96,15 +96,15 @@ orig_ord - vector of column names that are ordinal in hp_orig
 
 To Import Data,
 ```{r importing RData}
-# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-# load('../Data/train_all.RData')
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+load('train_all.RData')
 ```
 
 Note: all ordinal categories are loaded in as numbers in hp_orig and hp_feat
 To change them to factors,
 ```{r ordinal to factor}
-# hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
-# hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
+#hp_orig <- hp_orig %>% mutate_at(orig_ord, as.factor)
+#hp_feat <- hp_feat %>% mutate_at(feat_ord, as.factor)
 ```
 
 
