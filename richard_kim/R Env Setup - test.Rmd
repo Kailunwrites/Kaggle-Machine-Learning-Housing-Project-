@@ -61,8 +61,8 @@ Note: columns with 2 level factors are not converted to factors, but noted.
 
 ```{r featured}
 
-hp_feat_test <- read.csv('../Data/test_all_feature.csv')
-hp_feat_test <- hp_feat_test %>% select(-X)
+# hp_feat_test <- read.csv('../Data/test_all_feature.csv')
+# hp_feat_test <- hp_feat_test %>% select(-X)
 
 #fixing AgeRemod, YrSold, LowQualFinSF
 
