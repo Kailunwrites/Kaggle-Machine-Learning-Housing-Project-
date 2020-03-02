@@ -40,7 +40,7 @@ cv.lasso <- cv.glmnet(x = hp_feat_pred,
 best_lambda_lasso <- cv.lasso$lambda.min
 
 grid = 10^seq(1, -5, length = 100)
-# building lasso ###
+# building lasso for visualization first doing grid ###
 lasso <- glmnet(x = hp_feat_pred, 
                 y = hp_feat_resp,
                 # family = 'gaussian',
@@ -59,7 +59,17 @@ plot(lasso, xvar = "lambda", label=T, main = "Lasso Regression Decreasing Coeffc
 abline(v=log(best_lambda_lasso), col="black", lwd=3, lty=2)
 
 # predicting/rmse ###
-lasso_predicted <- predict(lasso, hp_feat_pred)
+lasso_refit <- glmnet(x = hp_feat_pred, 
+                y = hp_feat_resp,
+                # family = 'gaussian',
+                lambda = best_lambda_lasso, #
+                alpha = 1, # 1 = lasso, 0 = ridge
+                # standardize.response = TRUE, #standardizing the response variable (SalePrice_log).
+                trace.it = 1#show progress bar
+                # intercept = TRUE
+)
+
+lasso_predicted <- predict(lasso_refit, hp_feat_pred)
 ModelMetrics::rmse(hp_feat$SalePrice_log, lasso_predicted)
 
 # ridge ####
@@ -77,7 +87,8 @@ cv.ridge <- cv.glmnet(x = hp_feat_pred,
 
 best_lambda_ridge <- cv.ridge$lambda.min
 grid2 = 10^seq(2, -5, length = 100)
-# building ridge ###
+
+# building ridge for visualization over the grid2 ###
 ridge <- glmnet(x = hp_feat_pred, 
                 y = hp_feat_resp,
                 # family = 'gaussian',
@@ -96,8 +107,19 @@ plot(cv.ridge)
 plot(ridge, xvar = "lambda", label=T, main = "Ridge Regression Decreasing Coeffcients")
 abline(v=log(best_lambda_ridge), col="black", lwd=3, lty=2)
 
+
 # predicting/rmse ###
-ridge_predicted <- predict(ridge, hp_feat_pred)
+ridge_refit <- glmnet(x = hp_feat_pred, 
+                y = hp_feat_resp,
+                # family = 'gaussian',
+                lambda = best_lambda_ridge, #
+                alpha = 0, # 1 = lasso, 0 = ridge
+                # standardize.response = TRUE, #standardizing the response variable (SalePrice_log).
+                trace.it = 1#show progress bar
+                # intercept = TRUE
+)
+
+ridge_predicted <- predict(ridge_refit, hp_feat_pred)
 ModelMetrics::rmse(hp_feat$SalePrice_log, ridge_predicted)
 
 
