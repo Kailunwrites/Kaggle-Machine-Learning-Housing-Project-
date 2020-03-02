@@ -6,8 +6,7 @@ library(glmnet)
 # call data ####
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 load('../Data/train_all.RData')
-# load('../Data/test_all.RData')
-load('../Data/test_all_v2.RData')
+# load('../Data/test_all_v2.RData')
 
 # remove SalePrice and ID####
 # unnecessary for lm
@@ -15,7 +14,7 @@ hp_feat <- hp_feat %>% select(-SalePrice, -Id)
 
 # select only the variables that houseowners can flip.
 hp_feat_flip <- hp_feat %>% 
-  select(OverallQual, OverallCond, MasVnrArea, ExterQual, BedroomAbvGr, KitchenAbvGr, 
+  dplyr::select(OverallQual, OverallCond, MasVnrArea, ExterQual, BedroomAbvGr, KitchenAbvGr, 
          Fireplaces, WoodDeckSF, TotBaths, HasPool, HasDeck, HasPorch, HasStoneMas, 
          KitchenQual_Fa, KitchenQual_Gd, KitchenQual_TA, 
          BsmtCond_Gd, BsmtCond_None, BsmtCond_Po, BsmtCond_TA,
@@ -45,10 +44,13 @@ cv.lasso_flip <- cv.glmnet(x = hp_feat_flip_pred,
 best_lambda_lasso_flip <- cv.lasso_flip$lambda.min
 
 # building lasso ####
+grid = 10^seq(1, -5, length = 100)
+
 lasso_flip <- glmnet(x = hp_feat_flip_pred, 
                 y = hp_feat_flip_resp,
                 # family = 'gaussian',
-                lambda = best_lambda_lasso_flip, #
+                # lambda = best_lambda_lasso_flip,
+                lambda = grid,
                 alpha = 1, # 1 = lasso, 0 = ridge
                 # standardize.response = TRUE, #standardizing the response variable (SalePrice_log).
                 trace.it = 1#show progress bar
@@ -60,4 +62,9 @@ coef(lasso_flip)
 # predicting/rmse
 lasso_flip_predicted <- predict(lasso_flip, hp_feat_flip_pred)
 ModelMetrics::rmse(hp_feat$SalePrice_log, lasso_flip_predicted)
+
+#plots
+plot(lasso_flip)
+plot(lasso_flip, xvar = "lambda", label=T)
+abline(v=log(best_lambda_lasso_flip), col="black", lwd=3, lty=2)
 
