@@ -55,8 +55,9 @@ coef(lasso)
 
 # visualization the coeffs ##########
 plot(cv.lasso)
-plot(lasso, xvar = "lambda", label=T, main = "Lasso Regression Decreasing Coeffcients")
+plot(lasso, xvar = "lambda", label=T)
 abline(v=log(best_lambda_lasso), col="black", lwd=3, lty=2)
+#axis(1, at=log(best_lambda_lasso),labels=format(round(log(best_lambda_lasso),1), nsmall=1))
 
 # predicting/rmse ###
 lasso_refit <- glmnet(x = hp_feat_pred, 
